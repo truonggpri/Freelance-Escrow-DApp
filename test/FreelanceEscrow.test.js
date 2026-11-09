@@ -9,7 +9,7 @@ const ETH = ethers.parseEther("1");
 const REVIEW = 3n * 24n * 60n * 60n;
 const Status = Object.freeze({ Created: 0n, Submitted: 1n, Completed: 2n, Disputed: 3n, Cancelled: 4n });
 
-async function deployFixture({ ethers }) {
+async function deployFixture() {
   const [arbiter, client, freelancer, outsider, secondClient] = await ethers.getSigners();
   const escrow = await ethers.deployContract("FreelanceEscrow");
   await escrow.waitForDeployment();
@@ -22,20 +22,20 @@ async function createJob(ctx, { amount = ETH, title = "Design a landing page", d
   return await ctx.escrow.jobCounter();
 }
 
-async function createdFixture(connection) {
-  const ctx = await deployFixture(connection);
+async function createdFixture() {
+  const ctx = await deployFixture();
   await createJob(ctx);
   return ctx;
 }
 
-async function submittedFixture(connection) {
-  const ctx = await createdFixture(connection);
+async function submittedFixture() {
+  const ctx = await createdFixture();
   await (await ctx.escrow.connect(ctx.freelancer).submitWork(1n, "https://github.com/example/project/commit/123")).wait();
   return ctx;
 }
 
-async function disputedFixture(connection) {
-  const ctx = await submittedFixture(connection);
+async function disputedFixture() {
+  const ctx = await submittedFixture();
   await (await ctx.escrow.connect(ctx.client).raiseDispute(1n)).wait();
   return ctx;
 }
