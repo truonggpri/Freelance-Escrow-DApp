@@ -1,0 +1,17 @@
+{
+  "name": "freelance-escrow-dapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local EVM simulation tests for FreelanceEscrow",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "test": "hardhat test",
+    "test:coverage": "hardhat test --coverage",
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
+    "hardhat": "^3.1.0"
+  }
+}
