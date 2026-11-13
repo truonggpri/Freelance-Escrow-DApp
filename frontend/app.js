@@ -75,7 +75,7 @@ async function updateWallet() {
   if (chain.toLowerCase() !== SEPOLIA) {
     setText('network', 'Wrong network · switch to Sepolia'); resetDetails(); return;
   }
-  setText('network', '● Sepolia connected');
+  setText('network', 'Sepolia connected');
   provider = new ethers.BrowserProvider(window.ethereum);
   signer = await provider.getSigner();
   await loadContract(false);
