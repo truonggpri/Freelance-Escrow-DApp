@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A simple on-chain escrow for freelance work on Sepolia.">
-  <title>Freelance Escrow - Web3 Dashboard</title>
+  <title data-i18n="m.title">Freelance Escrow - Web3 Dashboard</title>
   
   <!-- Tailwind CSS CDN -->
    <script src="https://cdn.tailwindcss.com"></script>
@@ -15,6 +15,7 @@
   </script>
   
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="app.js" defer></script>
 
   <!-- CSS Tùy chỉnh -->
@@ -34,9 +35,11 @@
       </a>
       
       <div class="flex items-center gap-3">
-        <a href="profile.html" class="text-xs font-semibold text-slate-600 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400">Hồ sơ</a>
+        <a href="profile.html" class="text-xs font-semibold text-slate-600 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400" data-i18n="c.nav.profile">Hồ sơ</a>
         <!-- NÚT CHUYỂN ĐỔI SÁNG / TỐI -->
-        <button id="themeToggle" type="button" aria-label="Toggle Light/Dark Mode" title="Chuyển đổi giao diện Sáng / Tối"
+        <button id="langToggle" type="button" data-i18n-title="c.langToggle" data-i18n-aria="c.langToggle" class="lang-toggle"><span data-lang="vi">VI</span><span data-lang="en">EN</span></button>
+
+        <button id="themeToggle" type="button" aria-label="Toggle Light/Dark Mode" data-i18n-aria="c.themeToggle" title="Chuyển đổi giao diện Sáng / Tối" data-i18n-title="c.themeToggle"
           class="btn-action flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-emerald-500/50 hover:text-emerald-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-emerald-500/40 dark:hover:text-emerald-400">
           <!-- Icon Mặt Trời (Hiện khi đang ở Dark Mode) -->
           <svg id="sunIcon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -54,6 +57,7 @@
         </div>
          <button id="connect" class="btn-action flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-slate-950 dark:text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-400" type="button">
           Connect wallet <span aria-hidden="true">↗</span>
+        </button>
       </div>
     </div>
   </header>
@@ -65,16 +69,16 @@
     <div class="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-slate-200 dark:border-slate-800/60 pb-8">
       <div>
         <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
-          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> YOUR ON-CHAIN WORKSPACE
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span> <span data-i18n="m.hero.badge">YOUR ON-CHAIN WORKSPACE</span>
         </div>
-        <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl">Work with confidence.</h1>
-        <p class="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">A simple, transparent way to secure payments and deliver great work together using Smart Contracts.</p>
+        <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl" data-i18n="m.hero.title">Work with confidence.</h1>
+        <p class="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base" data-i18n="m.hero.sub">A simple, transparent way to secure payments and deliver great work together using Smart Contracts.</p>
       </div>
       
       <div class="hidden gap-8 border-l border-slate-300 dark:border-slate-800 pl-8 text-xs text-slate-500 dark:text-slate-400 lg:flex">
-        <div><b class="block text-sm text-slate-800 dark:text-slate-200">01 / Deposit</b>Funds held on-chain</div>
-        <div><b class="block text-sm text-slate-800 dark:text-slate-200">02 / Deliver</b>Share your proof</div>
-        <div><b class="block text-sm text-slate-800 dark:text-slate-200">03 / Release</b>Get paid securely</div>
+        <div><b class="block text-sm text-slate-800 dark:text-slate-200" data-i18n="m.step1.t">01 / Deposit</b><span data-i18n="m.step1.d">Funds held on-chain</span></div>
+        <div><b class="block text-sm text-slate-800 dark:text-slate-200" data-i18n="m.step2.t">02 / Deliver</b><span data-i18n="m.step2.d">Share your proof</span></div>
+        <div><b class="block text-sm text-slate-800 dark:text-slate-200" data-i18n="m.step3.t">03 / Release</b><span data-i18n="m.step3.d">Get paid securely</span></div>
       </div>
     </div>
 
@@ -83,13 +87,13 @@
       <div class="flex flex-wrap items-end gap-4">
         <div class="min-w-[240px] flex-1">
           <div class="mb-2 flex items-center gap-2.5">
-            <h2 id="contract-heading" class="text-sm font-semibold text-slate-800 dark:text-slate-200">Contract address</h2>
-            <span class="rounded bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">CONFIGURATION</span>
+            <h2 id="contract-heading" class="text-sm font-semibold text-slate-800 dark:text-slate-200" data-i18n="c.contractAddress">Contract address</h2>
+            <span class="rounded bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider" data-i18n="m.cfg.tag">CONFIGURATION</span>
           </div>
-          <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">Paste your deployed Sepolia contract address to interact with the escrow system.</p>
-          <input id="contractAddress" class="field-input font-mono w-full rounded-xl px-4 py-2.5 text-sm" placeholder="0x..." autocomplete="off" spellcheck="false" aria-label="Contract address">
+          <p class="mb-3 text-xs text-slate-500 dark:text-slate-400" data-i18n="m.cfg.desc">Paste your deployed Sepolia contract address to interact with the escrow system.</p>
+          <input id="contractAddress" class="field-input font-mono w-full rounded-xl px-4 py-2.5 text-sm" placeholder="0x..." autocomplete="off" spellcheck="false" aria-label="Contract address" data-i18n-aria="c.contractAddress">
         </div>
-        <button id="saveContract" class="btn-action rounded-xl border border-slate-300 bg-slate-100 px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700" type="button">
+        <button id="saveContract" class="btn-action rounded-xl border border-slate-300 bg-slate-100 px-5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700" type="button" data-i18n="m.cfg.save">
           Save address
         </button>
       </div>
@@ -102,43 +106,56 @@
       <!-- LEFT COLUMN -->
       <div class="space-y-8 lg:col-span-5">
         
+        <!-- WITHDRAWABLE BALANCE (pull payments) -->
+        <section class="glass-card rounded-2xl p-6" aria-labelledby="balance-heading">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase" data-i18n="m.bal.tag">YOUR ESCROW BALANCE</p>
+              <h2 id="balance-heading" class="sr-only" data-i18n="m.bal.sr">Withdrawable balance</h2>
+              <p id="pendingAmount" class="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">—</p>
+              <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400" data-i18n="m.bal.desc">Payouts and refunds are credited here. Withdraw to move them to your wallet.</p>
+            </div>
+            <button id="withdraw" type="button" disabled class="btn btn-primary" data-i18n="m.bal.withdraw">Withdraw →</button>
+          </div>
+        </section>
+
         <!-- CREATE JOB FORM -->
         <section class="glass-card rounded-2xl p-6">
           <div class="mb-6 flex items-start justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
             <div>
-              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">FOR CLIENTS</p>
-              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Create a job</h2>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Fund an agreement to get started.</p>
+              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase" data-i18n="m.create.tag">FOR CLIENTS</p>
+              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white" data-i18n="m.create.title">Create a job</h2>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="m.create.sub">Fund an agreement to get started.</p>
             </div>
             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">↗</span>
           </div>
 
           <form id="createForm" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Job title</label>
-              <input name="title" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="e.g. Design a landing page" required maxlength="200">
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="m.create.jobTitle">Job title</label>
+              <input name="title" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="e.g. Design a landing page" data-i18n-placeholder="m.create.titlePh" required maxlength="200">
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Freelancer address</label>
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="m.create.freelancer">Freelancer address</label>
               <input name="freelancer" class="field-input font-mono w-full rounded-xl px-4 py-2 text-sm" placeholder="0x..." required>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Duration <span class="text-slate-400 dark:text-slate-500">(days)</span></label>
+                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"><span data-i18n="m.create.duration">Duration</span> <span class="text-slate-400 dark:text-slate-500" data-i18n="m.create.days">(days)</span></label>
                 <input name="duration" class="field-input w-full rounded-xl px-4 py-2 text-sm" type="number" min="1" step="1" placeholder="7" required>
               </div>
               <div>
-                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Deposit <span class="text-slate-400 dark:text-slate-500">(ETH)</span></label>
+                <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5"><span data-i18n="m.create.deposit">Deposit</span> <span class="text-slate-400 dark:text-slate-500">(ETH)</span></label>
                 <input name="amount" class="field-input w-full rounded-xl px-4 py-2 text-sm" type="text" inputmode="decimal" placeholder="0.01" required>
               </div>
             </div>
 
             <button class="btn-action w-full rounded-xl bg-emerald-500 py-3 text-xs font-bold  shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 mt-2" type="submit">
-              Create & deposit <span class="ml-1">→</span>
+              <span data-i18n="m.create.submit">Create & deposit</span> <span class="ml-1">→</span>
             </button>
-            <p class="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">ETH is locked safely in the smart contract until settlement.</p>
+            <p class="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2" data-i18n="m.create.note">ETH is locked safely in the smart contract until settlement. A 50% advance requires a freelancer request and client approval.</p>
           </form>
         </section>
 
@@ -146,24 +163,24 @@
         <section class="glass-card rounded-2xl p-6">
           <div class="mb-6 flex items-start justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
             <div>
-              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">FOR FREELANCERS</p>
-              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Submit your work</h2>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Share a commit, URL or IPFS CID as proof.</p>
+              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase" data-i18n="m.submit.tag">FOR FREELANCERS</p>
+              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white" data-i18n="m.submit.title">Submit your work</h2>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="m.submit.sub">Share a commit, URL or IPFS CID as proof.</p>
             </div>
             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">⌁</span>
           </div>
 
           <form id="submitForm" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Job ID</label>
-              <input name="jobId" class="field-input w-full rounded-xl px-4 py-2 text-sm" type="number" min="1" step="1" placeholder="e.g. 1" required>
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="m.jobId">Job ID</label>
+              <input name="jobId" class="field-input w-full rounded-xl px-4 py-2 text-sm" type="number" min="1" step="1" placeholder="e.g. 1" data-i18n-placeholder="m.submit.idPh" required>
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Proof of work</label>
-              <input name="proof" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="GitHub URL, commit SHA or IPFS CID" required>
+              <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5" data-i18n="m.submit.proof">Proof of work</label>
+              <input name="proof" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="GitHub URL, commit SHA or IPFS CID" data-i18n-placeholder="m.submit.proofPh" required>
             </div>
             <button class="btn-action w-full rounded-xl border border-slate-300 bg-slate-100 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white" type="submit">
-              Submit proof <span class="ml-1">→</span>
+              <span data-i18n="m.submit.btn">Submit proof</span> <span class="ml-1">→</span>
             </button>
           </form>
         </section>
@@ -173,22 +190,56 @@
       <!-- RIGHT COLUMN -->
       <div class="space-y-8 lg:col-span-7">
         
+        <!-- MY JOBS -->
+        <section class="glass-card rounded-2xl p-6" aria-labelledby="myjobs-heading">
+          <div class="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-4">
+            <div>
+              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase" data-i18n="m.my.tag">YOUR WORKSPACE</p>
+              <h2 id="myjobs-heading" class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white"><span data-i18n="m.my.title">My jobs</span> <span id="myJobsCount" class="ml-1 text-xs font-medium text-slate-500"></span></h2>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="m.my.sub">Every agreement where you are the client or the freelancer. Select one to open it.</p>
+            </div>
+            <button id="refreshJobs" type="button" class="btn btn-outline" title="Reload from the chain" data-i18n-title="m.my.refreshTitle" data-i18n="m.my.refresh">↻ Refresh</button>
+          </div>
+          <div class="mb-4 grid grid-cols-2 gap-3">
+            <label class="text-[11px] font-medium text-slate-600 dark:text-slate-400"><span data-i18n="m.my.role">Role</span>
+              <select id="roleFilter" class="field-input mt-1 w-full rounded-xl px-3 py-2 text-xs">
+                <option value="all" data-i18n="m.my.allRoles">All roles</option>
+                <option value="client" data-i18n="m.my.roleClient">Client</option>
+                <option value="freelancer" data-i18n="m.my.roleFreelancer">Freelancer</option>
+                <option value="arbiter" data-i18n="m.my.roleArbiter">Arbiter queue</option>
+              </select>
+            </label>
+            <label class="text-[11px] font-medium text-slate-600 dark:text-slate-400"><span data-i18n="m.my.status">Status</span>
+              <select id="statusFilter" class="field-input mt-1 w-full rounded-xl px-3 py-2 text-xs">
+                <option value="all" data-i18n="m.my.allStatuses">All statuses</option>
+                <option value="0" data-i18n="s.0">Created</option>
+                <option value="1" data-i18n="s.1">Submitted</option>
+                <option value="3" data-i18n="s.3">Disputed</option>
+                <option value="2" data-i18n="s.2">Completed</option>
+                <option value="4" data-i18n="s.4">Cancelled</option>
+              </select>
+            </label>
+          </div>
+          <p id="myJobsEmpty" class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-xs text-slate-500 dark:border-slate-800">Connect your wallet to see your jobs.</p>
+          <div id="myJobs" class="max-h-96 space-y-2 overflow-auto pr-1"></div>
+        </section>
+
         <!-- INSPECT AGREEMENT SECTION -->
         <section class="glass-card rounded-2xl p-6">
           <div class="mb-6 flex items-start justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
             <div>
-              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">YOUR AGREEMENT</p>
-              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Inspect a job</h2>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Look up job status, participants, and available actions.</p>
+              <p class="text-[10px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase" data-i18n="m.det.tag">YOUR AGREEMENT</p>
+              <h2 class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white" data-i18n="m.det.title">Job details</h2>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="m.det.sub">Pick a job above, or look up any job by its ID.</p>
             </div>
             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">⌕</span>
           </div>
 
           <!-- SEARCH FORM -->
           <form id="inspectForm" class="flex gap-3">
-            <label class="sr-only" for="inspectId">Job ID</label>
-            <input id="inspectId" class="field-input flex-1 rounded-xl px-4 py-2.5 text-sm" type="number" min="1" step="1" placeholder="Enter job ID (e.g. 1)" required>
-           <button class="btn-action shrink-0 rounded-xl border border-slate-300 bg-slate-100 px-6 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700" type="submit">
+            <label class="sr-only" for="inspectId" data-i18n="m.jobId">Job ID</label>
+            <input id="inspectId" class="field-input flex-1 rounded-xl px-4 py-2.5 text-sm" type="number" min="1" step="1" placeholder="Enter job ID (e.g. 1)" data-i18n-placeholder="m.det.idPh" required>
+           <button class="btn-action shrink-0 rounded-xl border border-slate-300 bg-slate-100 px-6 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700" type="submit" data-i18n="m.det.lookup">
               Look up
            </button>
           </form>
@@ -196,8 +247,8 @@
           <!-- EMPTY STATE -->
           <div id="emptyState" class="my-10 text-center py-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl">
             <span class="inline-block p-3 rounded-full bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-xl mb-3">⌕</span>
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Find an agreement</h3>
-            <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">Enter a valid job ID above to view its live status, details, and take action.</p>
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300" data-i18n="m.det.emptyTitle">No job selected</h3>
+            <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto" data-i18n="m.det.emptyText">Choose a job from "My jobs" or enter a job ID above to view its live status and take action.</p>
           </div>
 
           <!-- JOB DETAILS CONTAINER -->
@@ -212,36 +263,59 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 bg-slate-50/80 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-800/80">
               <div class="metric-box p-3 rounded-lg">
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">DEPOSIT</span>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.deposit">DEPOSIT</span>
                 <span id="jobAmount" class="text-lg font-extrabold text-emerald-600 dark:text-emerald-400"></span>
               </div>
               <div class="metric-box p-3 rounded-lg">
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">TIME REMAINING</span>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.time">TIME REMAINING</span>
                 <span id="jobTime" class="text-sm font-semibold text-slate-800 dark:text-slate-200"></span>
               </div>
               <div class="metric-box sm:col-span-2 p-3 rounded-lg">
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">CLIENT</span>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.client">CLIENT</span>
                 <span id="jobClient" class="font-mono text-xs text-slate-700 dark:text-slate-300 break-all"></span>
               </div>
               <div class="metric-box sm:col-span-2 p-3 rounded-lg">
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">FREELANCER</span>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.freelancer">FREELANCER</span>
                 <span id="jobFreelancer" class="font-mono text-xs text-slate-700 dark:text-slate-300 break-all"></span>
               </div>
               <div class="metric-box sm:col-span-2 p-3 rounded-lg">
-                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">PROOF OF WORK</span>
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.proof">PROOF OF WORK</span>
                 <span id="jobProof" class="text-xs text-emerald-600 dark:text-emerald-400 break-all"></span>
+              </div>
+              <div id="jobAdvanceBox" class="metric-box hidden sm:col-span-2 p-3 rounded-lg">
+                <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1" data-i18n="m.det.advance">ADVANCE PAID</span>
+                <span id="jobAdvance" class="text-xs text-slate-700 dark:text-slate-300"></span>
+              </div>
+              <div class="metric-box p-3 rounded-lg">
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.revisions">REVISIONS</span>
+                <span id="jobRevisions" class="text-sm font-semibold text-slate-800 dark:text-slate-200"></span>
+              </div>
+              <div id="jobNoteBox" class="metric-box hidden sm:col-span-2 p-3 rounded-lg">
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1" data-i18n="m.det.note">LATEST REVISION NOTE</span>
+                <span id="jobNote" class="text-xs text-slate-700 dark:text-slate-300 break-words whitespace-pre-wrap"></span>
+              </div>
+              <div id="jobCancelBox" class="metric-box hidden sm:col-span-2 p-3 rounded-lg">
+                <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block mb-1" data-i18n="m.det.cancel">CANCEL REQUEST</span>
+                <span id="jobCancel" class="text-xs text-slate-700 dark:text-slate-300"></span>
               </div>
             </div>
 
             <div id="actions" class="mt-6 flex flex-wrap gap-3"></div>
 
+            <form id="revisionForm" class="mt-6 hidden rounded-xl border border-sky-500/40 bg-sky-50/80 p-4 dark:bg-slate-900/90">
+              <label class="mb-2 block text-xs font-medium text-sky-800 dark:text-sky-300" for="revisionNote"><span data-i18n="m.rev.title">Request changes</span> <span id="revisionLeft" class="text-slate-500 dark:text-slate-400"></span></label>
+              <textarea id="revisionNote" name="note" rows="3" maxlength="500" required class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="Describe what needs to change (max 500 characters)" data-i18n-placeholder="m.rev.ph"></textarea>
+              <button class="btn btn-outline mt-3 w-full" type="submit" data-i18n="m.rev.btn">Send back for revision</button>
+              <p class="mt-2 text-[11px] text-slate-600 dark:text-slate-400" data-i18n="m.rev.note">The job returns to the freelancer with at least 3 more days. The deposit stays locked.</p>
+            </form>
+
             <form id="resolveForm" class="mt-6 hidden rounded-xl bg-amber-50/80 dark:bg-slate-900/90 p-4 border border-amber-500/40">
-              <label class="block text-xs font-medium text-amber-800 dark:text-amber-300 mb-2">Freelancer share <span class="text-slate-500 dark:text-slate-400">(0–100%)</span></label>
+              <label class="block text-xs font-medium text-amber-800 dark:text-amber-300 mb-2"><span data-i18n="m.res.share">Freelancer share</span> <span class="text-slate-500 dark:text-slate-400">(0–100%)</span></label>
               <input name="percent" class="field-input w-full rounded-xl px-4 py-2 text-sm" type="number" min="0" max="100" step="1" value="50" required>
-              <button class="btn-action bg-amber-500 text-slate-950 hover:bg-amber-400 font-bold text-xs mt-3 w-full py-2.5 rounded-xl" type="submit">
+              <button class="btn-action bg-amber-500 text-slate-950 hover:bg-amber-400 font-bold text-xs mt-3 w-full py-2.5 rounded-xl" type="submit" data-i18n="m.res.btn">
                 Resolve dispute
               </button>
-              <p class="mt-2 text-[11px] text-slate-600 dark:text-slate-400">The remaining percentage will automatically be returned to the client.</p>
+              <p class="mt-2 text-[11px] text-slate-600 dark:text-slate-400" data-i18n="m.res.note">The remaining percentage will automatically be returned to the client. If an advance was paid, the split applies to the part still in escrow.</p>
             </form>
 
             <p id="actionHint" class="mt-4 text-xs italic text-slate-500 dark:text-slate-400"></p>
@@ -253,12 +327,12 @@
           <div class="flex items-center justify-between border-b border-slate-800 px-5 py-3.5 bg-slate-900/80">
             <div class="flex items-center gap-2">
               <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-              <h2 class="text-xs font-bold tracking-wider text-slate-200 uppercase">Transaction Log</h2>
+              <h2 class="text-xs font-bold tracking-wider text-slate-200 uppercase" data-i18n="m.log.title">Transaction Log</h2>
             </div>
-            <span class="text-[11px] font-mono text-emerald-400">● Live Console</span>
+            <span class="text-[11px] font-mono text-emerald-400" data-i18n="m.log.live">● Live Console</span>
           </div>
           <ol id="log" class="max-h-64 min-h-32 space-y-2 overflow-auto p-4 font-mono text-xs leading-relaxed text-slate-300 divide-y divide-slate-800/50">
-            <li class="text-slate-400">System ready. Connect your wallet to begin.</li>
+            <li class="text-slate-400" data-i18n="m.log.ready">System ready. Connect your wallet to begin.</li>
           </ol>
         </section>
 
@@ -267,8 +341,8 @@
 
     <!-- FOOTER -->
     <footer class="mt-16 flex flex-wrap justify-between gap-4 border-t border-slate-200 dark:border-slate-800/80 pt-6 text-xs text-slate-500">
-      <span>FREELANCE ESCROW · BUILT FOR SEPOLIA</span>
-      <span>Transparent & Decentralized Agreements</span>
+      <span data-i18n="m.foot.l">FREELANCE ESCROW · BUILT FOR SEPOLIA</span>
+      <span data-i18n="m.foot.r">Transparent & Decentralized Agreements</span>
     </footer>
   </main>
     <script>

@@ -2,14 +2,18 @@
 const ABI = [
   'function arbiter() view returns (address)',
   'function jobCounter() view returns (uint256)',
-  'function jobs(uint256) view returns (uint256 id, address client, address freelancer, string title, uint256 amount, string workHash, uint256 deadline, uint256 submittedAt, uint8 status)',
+  'function jobs(uint256) view returns (uint256 id, address client, address freelancer, string title, uint256 amount, string workHash, uint256 deadline, uint256 submittedAt, uint8 status, uint8 revisions, uint256 disputedAt, address cancelRequestedBy, uint256 advancePaid)',
+  'function getUserJobs(address user) view returns (uint256[])',
+  'function balances(address) view returns (uint256)',
+  'function withdraw()',
+  'event Withdrawn(address indexed to, uint256 amount)',
   'event JobCreated(uint256 indexed jobId, address indexed client, address indexed freelancer, uint256 amount, uint256 deadline)',
+  'event JobStarted(uint256 indexed jobId, address indexed freelancer, uint256 advance)',
   'event JobCompleted(uint256 indexed jobId, uint256 freelancerAmount, uint256 clientAmount)',
   'event JobCancelled(uint256 indexed jobId)'
 ];
 const SEPOLIA = '0xaa36a7';
 const EXPLORER = 'https://sepolia.etherscan.io';
-const STATUS = ['Đã tạo', 'Đã nộp bài', 'Hoàn tất', 'Tranh chấp', 'Đã huỷ'];
 const PAGE_SIZE = 10;
 const $ = id => document.getElementById(id);
 
@@ -25,23 +29,32 @@ const store = {
   set(key, value) { try { localStorage.setItem(key, value); } catch (_) { /* bỏ qua nếu bị chặn */ } }
 };
 function shortAddress(a) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
-function errorText(e) { return e?.reason || e?.shortMessage || e?.info?.error?.message || e?.message || String(e); }
+function errorText(e) { return trReason(e?.reason || e?.shortMessage || e?.info?.error?.message || e?.message || String(e)); }
 function fmtEth(wei, digits = 6) {
   const [i, f = ''] = ethers.formatEther(wei).split('.');
   const frac = f.slice(0, digits).replace(/0+$/, '');
   return frac ? `${i}.${frac}` : i;
 }
 function fmtDate(ts) {
-  return new Date(ts * 1000).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
+  return new Date(ts * 1000).toLocaleString(getLang() === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'short', timeStyle: 'short' });
 }
 function show(id, on) { $(id).classList.toggle('hidden', !on); }
-function setStatus(msg) { $('histStatus').textContent = msg; show('histStatus', !!msg); }
+let statusState = null; // { key, vars } so the message can be re-translated
+function setStatus(key, vars) { statusState = key ? { key, vars } : null; renderStatus(); }
+function renderStatus() { const msg = statusState ? t(statusState.key, statusState.vars) : ''; $('histStatus').textContent = msg; show('histStatus', !!msg); }
+let warnMsg = null;
+function renderWarn() { if (warnMsg === null) return; $('histWarn').textContent = t('p.hist.warn', { msg: warnMsg }); }
+let lastJobs = null;
 
-function showScreen(name, message) {
+function showScreen(name, message, raw = false) {
   show('loggedOut', name === 'loggedOut');
   show('needContract', name === 'needContract');
   show('profile', name === 'profile');
-  if (name === 'loggedOut' && message) $('loggedOutMsg').textContent = message;
+  if (name === 'loggedOut') {
+    const el = $('loggedOutMsg');
+    if (message && raw) { delete el.dataset.i18n; el.textContent = message; }
+    else { el.dataset.i18n = message || 'p.out.msg'; el.textContent = t(el.dataset.i18n); }
+  }
 }
 
 /* ---------- đăng nhập / ví ---------- */
@@ -53,8 +66,8 @@ async function switchNetwork() {
   }
 }
 async function connect() {
-  if (!window.ethereum) throw new Error('Cần cài MetaMask hoặc ví tương thích EIP-1193.');
-  if (!window.ethers) throw new Error('Không tải được Ethers.js. Kiểm tra kết nối mạng.');
+  if (!window.ethereum) throw new Error(t('err.noWallet'));
+  if (!window.ethers) throw new Error(t('err.noEthers'));
   await window.ethereum.request({ method: 'eth_requestAccounts' });
   const chain = await window.ethereum.request({ method: 'eth_chainId' });
   if (chain.toLowerCase() !== SEPOLIA) await switchNetwork();
@@ -62,24 +75,24 @@ async function connect() {
 }
 
 async function init() {
-  account = undefined; contract = undefined; history = [];
+  account = undefined; contract = undefined; history = []; show('pendingCard', false);
   if (!window.ethereum || !window.ethers) {
-    setNetwork('Chưa kết nối ví', 'amber');
-    showScreen('loggedOut', 'Không tìm thấy ví hoặc Ethers.js chưa tải xong. Cần MetaMask và kết nối Internet.');
+    setNetwork('c.network.none', 'amber'); renderConnect();
+    showScreen('loggedOut', 'p.out.noWallet');
     return;
   }
   const accounts = await window.ethereum.request({ method: 'eth_accounts' });
   const chain = await window.ethereum.request({ method: 'eth_chainId' });
-  if (!accounts.length) { setNetwork('Chưa kết nối ví', 'amber'); $('connect').textContent = 'Đăng nhập bằng ví ↗'; showScreen('loggedOut'); return; }
+  if (!accounts.length) { setNetwork('c.network.none', 'amber'); renderConnect(); showScreen('loggedOut'); return; }
 
   account = ethers.getAddress(accounts[0]);
-  $('connect').textContent = shortAddress(account);
+  renderConnect();
   if (chain.toLowerCase() !== SEPOLIA) {
-    setNetwork('Sai mạng · hãy chuyển sang Sepolia', 'rose');
-    showScreen('loggedOut', 'Ví đang ở sai mạng. Bấm "Kết nối ví" để chuyển sang Sepolia.');
+    setNetwork('c.network.wrong', 'rose');
+    showScreen('loggedOut', 'p.out.wrongNet');
     return;
   }
-  setNetwork('Sepolia đã kết nối', 'emerald');
+  setNetwork('c.network.ok', 'emerald');
   provider = new ethers.BrowserProvider(window.ethereum);
 
   renderIdentity();
@@ -92,10 +105,13 @@ async function init() {
   await loadHistory(address);
 }
 
-function setNetwork(text, color) {
-  $('network').textContent = text;
-  $('networkDot').className = `h-2 w-2 rounded-full bg-${color}-400 ${color === 'emerald' ? '' : 'animate-pulse'}`;
+let netKey = 'c.network.none', netColor = 'amber';
+function setNetwork(key, color) { netKey = key; netColor = color; renderNetwork(); }
+function renderNetwork() {
+  $('network').textContent = t(netKey);
+  $('networkDot').className = `h-2 w-2 rounded-full bg-${netColor}-400 ${netColor === 'emerald' ? '' : 'animate-pulse'}`;
 }
+function renderConnect() { $('connect').textContent = account ? shortAddress(account) : t('p.connect'); }
 
 /* ---------- thông tin hồ sơ ---------- */
 function profileKey() { return `escrowProfile:${account.toLowerCase()}`; }
@@ -105,7 +121,7 @@ function renderIdentity() {
   const p = readProfile();
   const name = (p.name || '').trim();
   $('displayName').textContent = name || shortAddress(account);
-  $('bio').textContent = p.bio || 'Chưa có giới thiệu.';
+  $('bio').textContent = p.bio || t('p.bio.none');
   $('fullAddress').textContent = account;
   $('explorerLink').href = `${EXPLORER}/address/${account}`;
   const hue = parseInt(account.slice(2, 8), 16) % 360;
@@ -163,50 +179,49 @@ async function findCreated(latest, floor, needed) {
 async function loadHistory(address) {
   if (loading) return;
   loading = true;
-  $('histTable').classList.add('hidden'); show('showMore', false); show('histWarn', false);
-  setStatus('Đang đọc dữ liệu từ contract…');
+  $('histTable').classList.add('hidden'); show('showMore', false); show('histWarn', false); warnMsg = null;
+  setStatus('p.hist.reading');
   try {
-    if (!ethers.isAddress(address)) throw new Error('Địa chỉ contract không hợp lệ.');
-    if (await provider.getCode(address) === '0x') throw new Error('Không có contract nào tại địa chỉ này trên Sepolia.');
+    if (!ethers.isAddress(address)) throw new Error(t('p.need.invalid'));
+    if (await provider.getCode(address) === '0x') throw new Error(t('err.noContract'));
     contract = new ethers.Contract(address, ABI, provider);
     readers = [contract, new ethers.Contract(address, ABI, new ethers.JsonRpcProvider(PUBLIC_RPC, 11155111, { staticNetwork: true }))];
 
     const arbiter = await contract.arbiter();
     isArbiter = arbiter.toLowerCase() === account.toLowerCase();
     show('roleBadge', isArbiter);
+    loadPending().catch(() => {});
 
-    // BƯỚC 1: danh sách job của tôi, đọc thẳng từ trạng thái contract (không cần event)
-    const count = Number(await contract.jobCounter());
-    const all = [];
-    for (let i = 1; i <= count; i += 20) {
-      const batch = [];
-      for (let id = i; id < Math.min(i + 20, count + 1); id++) batch.push(contract.jobs(id));
-      all.push(...await Promise.all(batch));
-    }
+    // BƯỚC 1: danh sách job của tôi. Contract có sẵn chỉ mục getUserJobs nên không cần quét toàn bộ job.
+    let ids;
+    try { ids = Array.from(await contract.getUserJobs(account)); }
+    catch (_) { throw new Error(t('p.oldContract')); }
+    const mine = [];
+    for (let i = 0; i < ids.length; i += 20) mine.push(...await Promise.all(ids.slice(i, i + 20).map(id => contract.jobs(id))));
     const me = account.toLowerCase();
-    const mine = all.filter(j => j.client.toLowerCase() === me || j.freelancer.toLowerCase() === me);
     const jobs = new Map(mine.map(j => [j.id, j]));
     const isClient = j => j.client.toLowerCase() === me;
 
     // BƯỚC 2: event (bổ sung thời gian + mã giao dịch). Lỗi ở đây không làm mất dữ liệu bước 1
-    let created = new Map(), completed = [], cancelled = [], eventsOk = true;
+    let created = new Map(), completed = [], cancelled = [], started = [], eventsOk = true;
     if (mine.length) {
       try {
-        setStatus('Đang đọc sự kiện giao dịch…');
+        setStatus('p.hist.readingEvents');
         const latest = await provider.getBlockNumber();
         const floor = Math.max(0, Number(store.get('escrowFromBlock', '0')) || 0);
         created = await findCreated(latest, floor, mine.length);
         if (created.size) {
           const ids = [...jobs.keys()];
           const from = Math.min(...[...created.values()].map(e => e.blockNumber));
-          [completed, cancelled] = await Promise.all([
+          [completed, cancelled, started] = await Promise.all([
             logsRange(c => c.filters.JobCompleted(ids), from, latest),
-            logsRange(c => c.filters.JobCancelled(ids), from, latest)
+            logsRange(c => c.filters.JobCancelled(ids), from, latest),
+            logsRange(c => c.filters.JobStarted(ids), from, latest)
           ]);
         }
       } catch (e) {
         console.error(e); eventsOk = false;
-        $('histWarn').textContent = `Không đọc được sự kiện giao dịch (${errorText(e)}). Đang hiển thị dữ liệu từ trạng thái contract, nên có thể thiếu thời gian / mã giao dịch.`;
+        warnMsg = errorText(e); renderWarn();
         show('histWarn', true);
       }
     }
@@ -215,7 +230,7 @@ async function loadHistory(address) {
     const rows = [];
     const meta = ev => ev ? { hash: ev.transactionHash, block: ev.blockNumber, index: ev.index } : {};
     for (const j of mine) {
-      if (isClient(j)) rows.push({ ...meta(created.get(j.id)), type: 'Đặt cọc', dir: 'out', jobId: j.id, title: j.title, amount: j.amount });
+      if (isClient(j)) rows.push({ ...meta(created.get(j.id)), typeKey: 'p.type.deposit', dir: 'out', jobId: j.id, title: j.title, amount: j.amount });
     }
     for (const e of completed) {
       const j = jobs.get(e.args.jobId); if (!j) continue;
@@ -223,18 +238,27 @@ async function loadHistory(address) {
       const got = asClient ? e.args.clientAmount : e.args.freelancerAmount;
       if (got <= 0n) continue;
       const split = e.args.freelancerAmount > 0n && e.args.clientAmount > 0n;
-      const type = asClient ? 'Hoàn tiền (phân xử tranh chấp)' : (split ? 'Nhận (phân xử tranh chấp)' : 'Nhận thanh toán');
-      rows.push({ ...meta(e), type, dir: 'in', jobId: j.id, title: j.title, amount: got });
+      const typeKey = asClient ? 'p.type.refundDispute' : (split ? 'p.type.receiveDispute' : 'p.type.receive');
+      rows.push({ ...meta(e), typeKey, dir: 'in', jobId: j.id, title: j.title, amount: got });
     }
+    // Tạm ứng 50% khi freelancer bắt đầu job (chỉ freelancer thấy khoản này là tiền vào)
+    const startedIds = new Set(started.map(e => e.args.jobId));
+    for (const e of started) {
+      const j = jobs.get(e.args.jobId);
+      if (j && !isClient(j)) rows.push({ ...meta(e), typeKey: 'p.type.advance', dir: 'in', jobId: j.id, title: j.title, amount: e.args.advance });
+    }
+    // Hoàn tiền khi huỷ = phần chưa tạm ứng
     const cancelledIds = new Set(cancelled.map(e => e.args.jobId));
     for (const e of cancelled) {
       const j = jobs.get(e.args.jobId);
-      if (j && isClient(j)) rows.push({ ...meta(e), type: 'Hoàn tiền (huỷ job)', dir: 'in', jobId: j.id, title: j.title, amount: j.amount });
+      if (j && isClient(j)) rows.push({ ...meta(e), typeKey: 'p.type.refundCancel', dir: 'in', jobId: j.id, title: j.title, amount: j.amount - j.advancePaid });
     }
-    // Dự phòng khi không đọc được event: job đã huỷ thì chắc chắn đã hoàn tiền cho client
+    // Dự phòng khi không đọc được event
     for (const j of mine) {
       if (isClient(j) && Number(j.status) === 4 && !cancelledIds.has(j.id))
-        rows.push({ type: 'Hoàn tiền (huỷ job)', dir: 'in', jobId: j.id, title: j.title, amount: j.amount });
+        rows.push({ typeKey: 'p.type.refundCancel', dir: 'in', jobId: j.id, title: j.title, amount: j.amount - j.advancePaid });
+      if (!isClient(j) && j.advancePaid > 0n && !startedIds.has(j.id))
+        rows.push({ typeKey: 'p.type.advance', dir: 'in', jobId: j.id, title: j.title, amount: j.advancePaid });
     }
 
     // thời gian của block
@@ -251,11 +275,40 @@ async function loadHistory(address) {
   } catch (error) {
     console.error(error);
     history = [];
-    setStatus(`Lỗi: ${errorText(error)}`);
+    setStatus('p.err', { msg: errorText(error) });
   } finally { loading = false; }
 }
 
+/* ---------- số dư chờ rút ---------- */
+async function loadPending() {
+  const c = contract;
+  if (!c || !account) { show('pendingCard', false); return; }
+  const balance = await c.balances(account);
+  if (contract !== c) return;
+  show('pendingCard', true);
+  $('pendingBalance').textContent = `${fmtEth(balance, 6)} ETH`;
+  $('withdrawBtn').disabled = balance === 0n;
+}
+async function withdraw() {
+  const btn = $('withdrawBtn'), msg = $('withdrawMsg');
+  btn.disabled = true; msg.textContent = t('p.pend.confirm');
+  try {
+    const signer = await provider.getSigner();
+    const tx = await contract.connect(signer).withdraw();
+    msg.textContent = t('p.pend.waiting');
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error(t('err.txFailed'));
+    msg.textContent = t('p.pend.done');
+    loadBalance();
+    await loadPending();
+  } catch (e) {
+    msg.textContent = t('p.err', { msg: errorText(e) });
+    loadPending().catch(() => {});
+  }
+}
+
 function renderStats(jobs) {
+  lastJobs = jobs;
   let out = 0n, inn = 0n, lockedAsClient = 0n, lockedAsFree = 0n, asClient = 0, asFree = 0, done = 0, open = 0;
   for (const h of history) h.dir === 'out' ? out += h.amount : inn += h.amount;
   for (const j of jobs.values()) {
@@ -265,15 +318,16 @@ function renderStats(jobs) {
     if (status === 2) done++;
     if (status === 0 || status === 1 || status === 3) {
       open++;
-      mineAsClient ? lockedAsClient += j.amount : lockedAsFree += j.amount;
+      const remaining = j.amount - j.advancePaid; // the advance is already in the freelancer's balance
+      mineAsClient ? lockedAsClient += remaining : lockedAsFree += remaining;
     }
   }
   $('statOut').textContent = `${fmtEth(out)} ETH`;
   $('statIn').textContent = `${fmtEth(inn)} ETH`;
   $('statLocked').textContent = `${fmtEth(lockedAsClient + lockedAsFree)} ETH`;
-  $('statLockedSub').textContent = `Bạn đã cọc ${fmtEth(lockedAsClient)} · Có thể nhận ${fmtEth(lockedAsFree)}`;
+  $('statLockedSub').textContent = t('p.stat.lockedSub', { a: fmtEth(lockedAsClient), b: fmtEth(lockedAsFree) });
   $('statJobs').textContent = String(jobs.size);
-  $('statJobsSub').textContent = `${asClient} làm client · ${asFree} làm freelancer · ${open} đang mở · ${done} hoàn tất`;
+  $('statJobsSub').textContent = t('p.stat.jobsSub', { c: asClient, f: asFree, o: open, d: done });
 }
 
 function renderHistory() {
@@ -283,7 +337,7 @@ function renderHistory() {
 
   if (!rows.length) {
     $('histTable').classList.add('hidden'); show('showMore', false);
-    setStatus(history.length ? 'Không có giao dịch nào trong bộ lọc này.' : 'Chưa có giao dịch tiền nào. Hãy tạo hoặc nhận một công việc ở trang chính.');
+    setStatus(history.length ? 'p.hist.emptyFilter' : 'p.hist.empty');
     return;
   }
   setStatus('');
@@ -300,13 +354,13 @@ function renderHistory() {
     badge.className = `rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${h.dir === 'in'
       ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
       : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30'}`;
-    badge.textContent = h.type;
+    badge.textContent = t(h.typeKey);
     cell('py-3 pr-3', badge);
 
     const job = document.createElement('div');
-    const t = document.createElement('div'); t.className = 'max-w-[220px] truncate font-medium text-slate-800 dark:text-slate-200'; t.textContent = h.title; t.title = h.title;
+    const nameEl = document.createElement('div'); nameEl.className = 'max-w-[220px] truncate font-medium text-slate-800 dark:text-slate-200'; nameEl.textContent = h.title; nameEl.title = h.title;
     const idv = document.createElement('div'); idv.className = 'text-[11px] text-slate-500'; idv.textContent = `Job #${h.jobId}`;
-    job.append(t, idv);
+    job.append(nameEl, idv);
     cell('py-3 pr-3', job);
 
     cell(`py-3 pr-3 text-right font-mono font-bold whitespace-nowrap ${h.dir === 'in' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`,
@@ -328,26 +382,26 @@ function renderHistory() {
 function exportCsv() {
   if (!history.length) return;
   const esc = v => `"${String(v).replace(/"/g, '""')}"`;
-  const lines = [['Thời gian', 'Loại', 'Job ID', 'Tiêu đề', 'Chiều', 'Số tiền (ETH)', 'Tx hash'].join(',')];
+  const lines = [t('p.csvHead')];
   for (const h of history) {
-    lines.push([h.ts ? new Date(h.ts * 1000).toISOString() : '', h.type, h.jobId, h.title, h.dir === 'in' ? 'vào' : 'ra',
+    lines.push([h.ts ? new Date(h.ts * 1000).toISOString() : '', t(h.typeKey), h.jobId, h.title, h.dir === 'in' ? t('p.csvIn') : t('p.csvOut'),
       `${h.dir === 'in' ? '' : '-'}${ethers.formatEther(h.amount)}`, h.hash || ''].map(esc).join(','));
   }
   const url = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
-  a.href = url; a.download = `lich-su-giao-dich-${account.slice(0, 8)}.csv`; a.click();
+  a.href = url; a.download = `${t('p.csvName')}-${account.slice(0, 8)}.csv`; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ---------- sự kiện giao diện ---------- */
-const fail = e => { console.error(e); setStatus(`Lỗi: ${errorText(e)}`); };
+const fail = e => { console.error(e); setStatus('p.err', { msg: errorText(e) }); };
 
-$('connect').addEventListener('click', () => connect().catch(e => showScreen('loggedOut', errorText(e))));
-$('connect2').addEventListener('click', () => connect().catch(e => showScreen('loggedOut', errorText(e))));
+$('connect').addEventListener('click', () => connect().catch(e => showScreen('loggedOut', errorText(e), true)));
+$('connect2').addEventListener('click', () => connect().catch(e => showScreen('loggedOut', errorText(e), true)));
 
 $('saveContract').addEventListener('click', () => {
   const value = $('contractAddress').value.trim();
-  if (!window.ethers || !ethers.isAddress(value) || value === ethers.ZeroAddress) { $('contractMsg').textContent = 'Địa chỉ contract không hợp lệ.'; return; }
+  if (!window.ethers || !ethers.isAddress(value) || value === ethers.ZeroAddress) { $('contractMsg').textContent = t('p.need.invalid'); return; }
   $('contractMsg').textContent = '';
   store.set('freelanceEscrowContract', value);
   showScreen('profile');
@@ -367,9 +421,9 @@ $('editForm').addEventListener('submit', event => {
 });
 
 $('copyAddr').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(account); $('copyAddr').textContent = 'Đã chép ✓'; }
-  catch (_) { $('copyAddr').textContent = 'Không chép được'; }
-  setTimeout(() => { $('copyAddr').textContent = 'Sao chép'; }, 1500);
+  try { await navigator.clipboard.writeText(account); $('copyAddr').textContent = t('p.copied'); }
+  catch (_) { $('copyAddr').textContent = t('p.copyFail'); }
+  setTimeout(() => { $('copyAddr').textContent = t('p.copy'); }, 1500);
 });
 
 $('filters').addEventListener('click', e => {
@@ -379,9 +433,18 @@ $('filters').addEventListener('click', e => {
 $('showMore').addEventListener('click', () => { visible += PAGE_SIZE; renderHistory(); });
 $('refresh').addEventListener('click', () => { loadBalance(); const a = store.get('freelanceEscrowContract').trim(); if (a) loadHistory(a).catch(fail); });
 $('exportCsv').addEventListener('click', exportCsv);
+$('withdrawBtn').addEventListener('click', withdraw);
 $('applyBlock').addEventListener('click', () => {
   store.set('escrowFromBlock', String(Math.max(0, parseInt($('fromBlock').value, 10) || 0)));
   const a = store.get('freelanceEscrowContract').trim(); if (a) loadHistory(a).catch(fail);
+});
+
+renderNetwork(); renderConnect();
+window.addEventListener('escrow:lang', () => {
+  renderNetwork(); renderConnect(); renderStatus(); renderWarn();
+  if (account && !$('profile').classList.contains('hidden')) renderIdentity();
+  if (lastJobs && account) renderStats(lastJobs);
+  if (history.length) renderHistory();
 });
 
 if (window.ethereum) {

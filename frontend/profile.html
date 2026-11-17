@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hồ sơ cá nhân - Freelance Escrow</title>
+  <title data-i18n="p.title">Hồ sơ cá nhân - Freelance Escrow</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="profile.js" defer></script>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -25,10 +26,12 @@
       </a>
 
       <nav class="flex items-center gap-3">
-        <a href="index.html" class="text-xs font-semibold text-slate-600 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400">Bảng điều khiển</a>
-        <a href="profile.html" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Hồ sơ</a>
+        <a href="index.html" class="text-xs font-semibold text-slate-600 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400" data-i18n="c.nav.dashboard">Bảng điều khiển</a>
+        <a href="profile.html" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400" data-i18n="c.nav.profile">Hồ sơ</a>
 
-        <button id="themeToggle" type="button" aria-label="Đổi giao diện" title="Chuyển đổi giao diện Sáng / Tối"
+        <button id="langToggle" type="button" data-i18n-title="c.langToggle" data-i18n-aria="c.langToggle" class="lang-toggle"><span data-lang="vi">VI</span><span data-lang="en">EN</span></button>
+
+        <button id="themeToggle" type="button" aria-label="Đổi giao diện" data-i18n-aria="c.themeToggle" title="Chuyển đổi giao diện Sáng / Tối" data-i18n-title="c.themeToggle"
           class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-emerald-500/50 hover:text-emerald-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300">
           <svg id="sunIcon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           <svg id="moonIcon" class="hidden h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
@@ -48,17 +51,17 @@
     <!-- TRẠNG THÁI CHƯA ĐĂNG NHẬP -->
     <section id="loggedOut" class="glass-card mx-auto mt-10 max-w-lg rounded-2xl p-10 text-center">
       <span class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-2xl text-emerald-600 dark:text-emerald-400">◇</span>
-      <h1 class="mt-4 text-2xl font-bold text-slate-900 dark:text-white">Đăng nhập để xem hồ sơ</h1>
-      <p id="loggedOutMsg" class="mt-2 text-sm text-slate-500 dark:text-slate-400">Kết nối ví MetaMask (mạng Sepolia) để xem hồ sơ và lịch sử giao dịch của bạn.</p>
-      <button id="connect2" type="button" class="mt-6 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-emerald-400">Kết nối ví</button>
+      <h1 class="mt-4 text-2xl font-bold text-slate-900 dark:text-white" data-i18n="p.out.title">Đăng nhập để xem hồ sơ</h1>
+      <p id="loggedOutMsg" class="mt-2 text-sm text-slate-500 dark:text-slate-400" data-i18n="p.out.msg">Kết nối ví MetaMask (mạng Sepolia) để xem hồ sơ và lịch sử giao dịch của bạn.</p>
+      <button id="connect2" type="button" class="mt-6 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-emerald-400" data-i18n="p.out.btn">Kết nối ví</button>
     </section>
 
     <!-- CHƯA CÓ ĐỊA CHỈ CONTRACT -->
     <section id="needContract" class="glass-card mx-auto mt-10 hidden max-w-lg rounded-2xl p-8">
-      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Cần địa chỉ contract</h2>
-      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Dán địa chỉ contract FreelanceEscrow đã deploy trên Sepolia (cùng địa chỉ bạn dùng ở trang chính).</p>
-      <input id="contractAddress" class="field-input mt-4 w-full rounded-xl px-4 py-2.5 font-mono text-sm" placeholder="0x..." autocomplete="off" spellcheck="false" aria-label="Địa chỉ contract">
-      <button id="saveContract" type="button" class="mt-3 w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400">Lưu & tải hồ sơ</button>
+      <h2 class="text-lg font-semibold text-slate-900 dark:text-white" data-i18n="p.need.title">Cần địa chỉ contract</h2>
+      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="p.need.desc">Dán địa chỉ contract FreelanceEscrow đã deploy trên Sepolia (cùng địa chỉ bạn dùng ở trang chính).</p>
+      <input id="contractAddress" class="field-input mt-4 w-full rounded-xl px-4 py-2.5 font-mono text-sm" placeholder="0x..." autocomplete="off" spellcheck="false" aria-label="Địa chỉ contract" data-i18n-aria="c.contractAddress">
+      <button id="saveContract" type="button" class="mt-3 w-full rounded-xl bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400" data-i18n="p.need.save">Lưu & tải hồ sơ</button>
       <p id="contractMsg" class="mt-2 text-xs text-rose-500" role="status"></p>
     </section>
 
@@ -73,60 +76,75 @@
           <div class="min-w-[220px] flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <h1 id="displayName" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white break-all"></h1>
-              <span id="roleBadge" class="hidden rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Arbiter</span>
+              <span id="roleBadge" class="hidden rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400" data-i18n="p.arbiter">Arbiter</span>
             </div>
             <p id="bio" class="mt-1 text-sm text-slate-600 dark:text-slate-400"></p>
 
             <div class="mt-3 flex flex-wrap items-center gap-2">
               <code id="fullAddress" class="rounded-lg bg-slate-200/70 px-2.5 py-1 font-mono text-xs text-slate-700 break-all dark:bg-slate-800 dark:text-slate-300"></code>
-              <button id="copyAddr" type="button" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Sao chép</button>
+              <button id="copyAddr" type="button" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800" data-i18n="p.copy">Sao chép</button>
               <a id="explorerLink" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Etherscan ↗</a>
             </div>
           </div>
 
           <div class="text-right">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Số dư ví</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="p.walletBal">Số dư ví</p>
             <p id="balance" class="mt-1 text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">—</p>
-            <button id="editBtn" type="button" class="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Sửa hồ sơ</button>
+            <button id="editBtn" type="button" class="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="p.edit">Sửa hồ sơ</button>
           </div>
         </div>
 
         <form id="editForm" class="mt-6 hidden grid gap-4 border-t border-slate-200 pt-6 dark:border-slate-800 sm:grid-cols-2">
           <div>
-            <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300" for="nameInput">Tên hiển thị</label>
-            <input id="nameInput" maxlength="40" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="VD: Nguyễn Văn A">
+            <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300" for="nameInput" data-i18n="p.nameLabel">Tên hiển thị</label>
+            <input id="nameInput" maxlength="40" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="VD: Nguyễn Văn A" data-i18n-placeholder="p.namePh">
           </div>
           <div>
-            <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300" for="bioInput">Giới thiệu</label>
-            <input id="bioInput" maxlength="160" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="VD: Freelancer thiết kế web">
+            <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300" for="bioInput" data-i18n="p.bioLabel">Giới thiệu</label>
+            <input id="bioInput" maxlength="160" class="field-input w-full rounded-xl px-4 py-2 text-sm" placeholder="VD: Freelancer thiết kế web" data-i18n-placeholder="p.bioPh">
           </div>
           <div class="flex gap-3 sm:col-span-2">
-            <button type="submit" class="rounded-xl bg-emerald-500 px-5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400">Lưu</button>
-            <button id="cancelEdit" type="button" class="rounded-xl border border-slate-300 px-5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Huỷ</button>
+            <button type="submit" class="rounded-xl bg-emerald-500 px-5 py-2 text-xs font-bold text-slate-950 hover:bg-emerald-400" data-i18n="p.save">Lưu</button>
+            <button id="cancelEdit" type="button" class="rounded-xl border border-slate-300 px-5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="p.cancel">Huỷ</button>
           </div>
-          <p class="text-[11px] text-slate-400 dark:text-slate-500 sm:col-span-2">Tên và giới thiệu chỉ lưu trong trình duyệt này (không ghi lên blockchain).</p>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 sm:col-span-2" data-i18n="p.localNote">Tên và giới thiệu chỉ lưu trong trình duyệt này (không ghi lên blockchain).</p>
         </form>
       </section>
 
+      <!-- SỐ DƯ CHỜ RÚT (pull payment) -->
+      <section id="pendingCard" class="glass-card hidden rounded-2xl p-5" aria-label="Số dư chờ rút" data-i18n-aria="p.pend.title">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400" data-i18n="p.pend.title">Số dư chờ rút</p>
+            <p id="pendingBalance" class="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">—</p>
+            <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400" data-i18n="p.pend.desc">Thanh toán, tạm ứng và hoàn tiền được ghi có vào contract; bạn cần rút về ví.</p>
+          </div>
+          <div class="text-right">
+            <button id="withdrawBtn" type="button" disabled class="rounded-xl bg-emerald-500 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50" data-i18n="p.pend.btn">Rút về ví →</button>
+            <p id="withdrawMsg" class="mt-2 text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
       <!-- THỐNG KÊ -->
-      <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Thống kê">
+      <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Thống kê" data-i18n-aria="p.stats">
         <div class="glass-card rounded-2xl p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Tổng đã chi</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="p.stat.spent">Tổng đã chi</p>
           <p id="statOut" class="mt-2 text-xl font-extrabold text-rose-600 dark:text-rose-400">—</p>
-          <p class="mt-1 text-[11px] text-slate-500">Tiền đặt cọc vào escrow</p>
+          <p class="mt-1 text-[11px] text-slate-500" data-i18n="p.stat.spentSub">Tiền đặt cọc vào escrow</p>
         </div>
         <div class="glass-card rounded-2xl p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Tổng đã nhận</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="p.stat.received">Tổng đã nhận</p>
           <p id="statIn" class="mt-2 text-xl font-extrabold text-emerald-600 dark:text-emerald-400">—</p>
-          <p class="mt-1 text-[11px] text-slate-500">Thanh toán + hoàn tiền</p>
+          <p class="mt-1 text-[11px] text-slate-500" data-i18n="p.stat.receivedSub">Tạm ứng + thanh toán + hoàn tiền (đã ghi có)</p>
         </div>
         <div class="glass-card rounded-2xl p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Đang khoá trong escrow</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="p.stat.locked">Đang khoá trong escrow</p>
           <p id="statLocked" class="mt-2 text-xl font-extrabold text-slate-900 dark:text-white">—</p>
           <p id="statLockedSub" class="mt-1 text-[11px] text-slate-500"></p>
         </div>
         <div class="glass-card rounded-2xl p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Công việc</p>
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="p.stat.jobs">Công việc</p>
           <p id="statJobs" class="mt-2 text-xl font-extrabold text-slate-900 dark:text-white">—</p>
           <p id="statJobsSub" class="mt-1 text-[11px] text-slate-500"></p>
         </div>
@@ -136,18 +154,18 @@
       <section class="glass-card rounded-2xl p-6" aria-labelledby="hist-heading">
         <div class="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800/80">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">LỊCH SỬ</p>
-            <h2 id="hist-heading" class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Lịch sử giao dịch tiền</h2>
-            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Đọc trực tiếp từ sự kiện của smart contract trên Sepolia.</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400" data-i18n="p.hist.tag">LỊCH SỬ</p>
+            <h2 id="hist-heading" class="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white" data-i18n="p.hist.title">Lịch sử giao dịch tiền</h2>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400" data-i18n="p.hist.sub">Đọc trực tiếp từ sự kiện của smart contract trên Sepolia.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <div id="filters" class="flex overflow-hidden rounded-lg border border-slate-300 text-xs font-semibold dark:border-slate-700">
-              <button type="button" data-f="all" class="filter-btn px-3 py-1.5">Tất cả</button>
-              <button type="button" data-f="in" class="filter-btn px-3 py-1.5">Tiền vào</button>
-              <button type="button" data-f="out" class="filter-btn px-3 py-1.5">Tiền ra</button>
+              <button type="button" data-f="all" class="filter-btn px-3 py-1.5" data-i18n="p.hist.all">Tất cả</button>
+              <button type="button" data-f="in" class="filter-btn px-3 py-1.5" data-i18n="p.hist.in">Tiền vào</button>
+              <button type="button" data-f="out" class="filter-btn px-3 py-1.5" data-i18n="p.hist.out">Tiền ra</button>
             </div>
-            <button id="refresh" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">↻ Làm mới</button>
-            <button id="exportCsv" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Xuất CSV</button>
+            <button id="refresh" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="p.hist.refresh">↻ Làm mới</button>
+            <button id="exportCsv" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="p.hist.csv">Xuất CSV</button>
           </div>
         </div>
 
@@ -159,27 +177,27 @@
           <table id="histTable" class="hidden w-full min-w-[640px] text-left text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                <th class="py-2 pr-3">Thời gian</th>
-                <th class="py-2 pr-3">Loại</th>
-                <th class="py-2 pr-3">Công việc</th>
-                <th class="py-2 pr-3 text-right">Số tiền</th>
-                <th class="py-2">Giao dịch</th>
+                <th class="py-2 pr-3" data-i18n="p.hist.time">Thời gian</th>
+                <th class="py-2 pr-3" data-i18n="p.hist.type">Loại</th>
+                <th class="py-2 pr-3" data-i18n="p.hist.job">Công việc</th>
+                <th class="py-2 pr-3 text-right" data-i18n="p.hist.amount">Số tiền</th>
+                <th class="py-2" data-i18n="p.hist.tx">Giao dịch</th>
               </tr>
             </thead>
             <tbody id="histBody" class="divide-y divide-slate-200 dark:divide-slate-800/70"></tbody>
           </table>
         </div>
 
-        <button id="showMore" type="button" class="mx-auto mt-4 hidden rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Xem thêm</button>
+        <button id="showMore" type="button" class="mx-auto mt-4 hidden rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" data-i18n="p.hist.more">Xem thêm</button>
 
         <details class="mt-6 text-xs text-slate-500 dark:text-slate-400">
-          <summary class="cursor-pointer font-semibold">Tuỳ chọn nâng cao</summary>
+          <summary class="cursor-pointer font-semibold" data-i18n="p.hist.adv">Tuỳ chọn nâng cao</summary>
           <div class="mt-3 flex flex-wrap items-end gap-3">
             <div>
-              <label class="mb-1 block" for="fromBlock">Quét từ block (để 0 nếu không rõ; nhập block deploy contract để nhanh hơn)</label>
+              <label class="mb-1 block" for="fromBlock" data-i18n="p.hist.fromBlock">Quét từ block (để 0 nếu không rõ; nhập block deploy contract để nhanh hơn)</label>
               <input id="fromBlock" type="number" min="0" step="1" class="field-input w-56 rounded-xl px-3 py-1.5 text-sm" value="0">
             </div>
-            <button id="applyBlock" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">Áp dụng</button>
+            <button id="applyBlock" type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700" data-i18n="p.hist.apply">Áp dụng</button>
           </div>
         </details>
       </section>

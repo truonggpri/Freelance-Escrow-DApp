@@ -1,0 +1,24 @@
+HƯỚNG DẪN CẬP NHẬT – CLIENT DUYỆT TẠM ỨNG 50%
+
+1. Cài Node.js >= 22.13.0. Tại thư mục dự án chạy npm ci rồi npm test.
+2. Deploy lại contracts/FreelanceEscrow.sol. Bản cũ không tự cập nhật.
+   Remix: chọn compiler 0.8.20, bật Optimization, Runs = 200.
+   Nếu gặp Stack too deep, bật viaIR trong Advanced Configurations và compile lại.
+   Tài khoản deploy là trọng tài. Dùng Sepolia cho demo.
+3. Chạy frontend như trước, dán địa chỉ contract MỚI và lưu/kết nối.
+   Job và tiền trên contract cũ vẫn ở contract cũ, không tự di chuyển.
+4. Client tạo job và nạp 1 ETH thử nghiệm.
+5. Freelancer bấm Yêu cầu ứng 50%: số dư vẫn là 0.
+6. Client mở job, bấm Đồng ý ứng 50% hoặc Từ chối tạm ứng.
+7. Nếu đồng ý: số dư freelancer tăng 0,5 ETH; freelancer bấm Rút tiền.
+   Nếu từ chối: tiền giữ nguyên, freelancer có thể gửi lại yêu cầu hoặc nộp bài.
+8. Freelancer nộp bài; client nghiệm thu: trả phần còn lại 0,5 ETH.
+   Nếu chưa duyệt tạm ứng: trả toàn bộ 1 ETH.
+
+LƯU Ý
+- Client không phản hồi thì không tự động ứng tiền. Deadline không tự kéo dài.
+- Sau khi client duyệt, khoản ứng đã thuộc số dư freelancer dù chưa rút.
+  Hủy hoặc trọng tài chỉ xử lý phần chưa ứng.
+- Nộp bài, đề nghị hủy, mở tranh chấp hoặc hủy job sẽ xóa yêu cầu ứng chờ duyệt.
+- Không cần sửa profile.js: JobStarted vẫn được phát khi client duyệt để lịch sử nhận ứng hoạt động.
+- Các nút được tạo động trong app.js. index.html cập nhật phần hướng dẫn.
